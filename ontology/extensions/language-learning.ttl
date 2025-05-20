@@ -1,0 +1,15 @@
+@prefix xapi: <http://adlnet.gov/expapi/ontology/> .
+@prefix ll: <http://example.org/xapi/ll#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# Language Learning extension for xAPI
+
+ll:VocabularyPractice a rdfs:Class ;
+    rdfs:subClassOf xapi:Activity ;
+    rdfs:label "Vocabulary Practice"@en ;
+    rdfs:comment "An activity where a learner practices vocabulary."@en .
+
+ll:pronouncedWord a rdfs:Property ;
+    rdfs:label "pronounced word"@en ;
+    rdfs:domain ll:VocabularyPractice ;
+    rdfs:range rdfs:Literal .

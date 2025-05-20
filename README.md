@@ -30,7 +30,7 @@ This repository provides a comprehensive specification for an xAPI (Experience A
 │   ├── xapi.ttl             # Core xAPI ontology in Turtle format
 │   ├── xapi.owl             # OWL representation of xAPI ontology
 │   ├── xapi-shapes.ttl      # SHACL shapes for xAPI data validation
-│   └── extensions/          # Domain-specific xAPI extensions
+│   └── extensions/          # Domain-specific xAPI extensions (see `ontology/extensions/language-learning.ttl`)
 │
 ├── semantic-layer/          # Semantic Knowledge Graph Layer
 │   ├── vkg/                 # Virtual Knowledge Graph specifications
@@ -67,6 +67,24 @@ This project adheres to the following standards and specifications:
 ## Getting Started
 
 Explore the repository structure above and check the documentation in the `/docs` directory for detailed information on each component.
+
+### Running the reference API server
+
+```
+python3 rest_api/ref_impl/server.py
+```
+
+The server listens on port `8000` by default and stores all data in memory. It implements a minimal subset of the API defined in `rest-api/openapi.yaml` and is useful for quick experimentation.
+
+### Sample data and validation
+
+Example xAPI statements are provided under `examples/sample-statements.jsonld`. A helper script in `scripts/validate_samples.py` can validate these statements against the SHACL shapes, provided `pyshacl` and `rdflib` are available in your environment.
+
+```
+python3 scripts/validate_samples.py
+```
+
+Another script `scripts/generate_data.py` demonstrates how to generate additional statements.
 
 ## Contributing
 
