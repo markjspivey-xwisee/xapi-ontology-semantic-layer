@@ -1,0 +1,21 @@
+[
+  {
+    "@context": "../rest-api/jsonld-context/statement-context.jsonld",
+    "id": "urn:uuid:11111111-1111-1111-1111-111111111111",
+    "actor": { "mbox": "mailto:alice@example.org", "name": "Alice" },
+    "verb": { "id": "http://adlnet.gov/expapi/verbs/completed", "display": {"en": "completed"} },
+    "object": { "id": "http://example.org/activity/example-activity" },
+    "timestamp": "2024-01-01T12:00:00Z"
+  },
+  {
+    "@context": "../rest-api/jsonld-context/statement-context.jsonld",
+    "actor": { "mbox": "mailto:bob@example.org", "name": "Bob" },
+    "verb": { "id": "http://adlnet.gov/expapi/verbs/attempted", "display": {"en": "attempted"} },
+    "object": { "id": "http://example.org/activity/example-quiz" },
+    "result": {
+      "score": { "scaled": 0.85 },
+      "success": true
+    },
+    "timestamp": "2024-02-01T15:30:00Z"
+  }
+]
