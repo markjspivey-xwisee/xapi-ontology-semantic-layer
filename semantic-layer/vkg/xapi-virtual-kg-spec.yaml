@@ -1,0 +1,279 @@
+name: xapi-virtual-knowledge-graph
+version: 1.0.0
+description: Virtual Knowledge Graph specification for xAPI data sources
+
+# Definition of data sources
+dataSources:
+  - id: xapi-lrs
+    type: rest-api
+    description: xAPI Learning Record Store API source
+    connection:
+      url: https://lrs.example.org/xapi
+      authMethod: oauth2
+      credentials:
+        type: env-variable
+        variable: XAPI_LRS_CREDENTIALS
+    mappings:
+      - source: statements
+        path: /statements
+        mediaType: application/json
+      - source: activities
+        path: /activities
+        mediaType: application/json
+      - source: agents
+        path: /agents
+        mediaType: application/json
+      - source: verbs
+        path: /verbs
+        mediaType: application/json
+  
+  - id: dcat-catalog
+    type: rdf
+    description: DCAT catalog for xAPI datasets
+    connection:
+      url: https://catalog.example.org/xapi
+      authMethod: none
+    format: turtle
+    graphs:
+      - name: default
+        uri: http://example.org/xapi/catalog
+  
+  - id: xapi-ontology
+    type: rdf
+    description: xAPI Ontology knowledge base
+    connection:
+      url: https://ontology.example.org/xapi
+      authMethod: none
+    format: owl
+    graphs:
+      - name: core
+        uri: http://adlnet.gov/expapi/ontology/
+
+# Virtual graph schema
+virtualSchema:
+  graphs:
+    - name: unified-xapi-graph
+      description: Unified view of xAPI data across all sources
+      baseUri: http://example.org/xapi/kg/
+      mappings:
+        - name: statements-mapping
+          sourceId: xapi-lrs
+          sourceType: statements
+          targetClass: http://adlnet.gov/expapi/ontology/Statement
+          idPattern: http://example.org/xapi/kg/statement/{id}
+          properties:
+            - source: actor
+              target: http://adlnet.gov/expapi/ontology/actor
+              type: reference
+            - source: verb
+              target: http://adlnet.gov/expapi/ontology/verb
+              type: reference
+            - source: object
+              target: http://adlnet.gov/expapi/ontology/object
+              type: reference
+            - source: result
+              target: http://adlnet.gov/expapi/ontology/result
+              type: reference
+            - source: context
+              target: http://adlnet.gov/expapi/ontology/context
+              type: reference
+            - source: timestamp
+              target: http://adlnet.gov/expapi/ontology/timestamp
+              type: literal
+              datatype: http://www.w3.org/2001/XMLSchema#dateTime
+            - source: stored
+              target: http://adlnet.gov/expapi/ontology/stored
+              type: literal
+              datatype: http://www.w3.org/2001/XMLSchema#dateTime
+            - source: authority
+              target: http://adlnet.gov/expapi/ontology/authority
+              type: reference
+            - source: version
+              target: http://adlnet.gov/expapi/ontology/version
+              type: literal
+        
+        - name: actor-mapping
+          sourceId: xapi-lrs
+          sourceType: statements.actor
+          targetClass: http://adlnet.gov/expapi/ontology/Actor
+          idPattern: http://example.org/xapi/kg/actor/{mbox|mbox_sha1sum|openid|account}
+          discriminator:
+            property: objectType
+            default: Agent
+            mapping:
+              Agent: http://adlnet.gov/expapi/ontology/Agent
+              Group: http://adlnet.gov/expapi/ontology/Group
+          properties:
+            - source: name
+              target: http://adlnet.gov/expapi/ontology/name
+              type: literal
+            - source: mbox
+              target: http://adlnet.gov/expapi/ontology/mbox
+              type: literal
+              datatype: http://www.w3.org/2001/XMLSchema#anyURI
+            - source: mbox_sha1sum
+              target: http://adlnet.gov/expapi/ontology/mbox_sha1sum
+              type: literal
+            - source: openid
+              target: http://adlnet.gov/expapi/ontology/openid
+              type: literal
+              datatype: http://www.w3.org/2001/XMLSchema#anyURI
+            - source: account
+              target: http://adlnet.gov/expapi/ontology/account
+              type: reference
+            - source: member
+              target: http://adlnet.gov/expapi/ontology/member
+              type: reference
+              multiValued: true
+        
+        - name: verb-mapping
+          sourceId: xapi-lrs
+          sourceType: statements.verb
+          targetClass: http://adlnet.gov/expapi/ontology/Verb
+          idTemplate: {id}
+          properties:
+            - source: id
+              target: http://adlnet.gov/expapi/ontology/id
+              type: literal
+              datatype: http://www.w3.org/2001/XMLSchema#anyURI
+            - source: display
+              target: http://adlnet.gov/expapi/ontology/display
+              type: localizedString
+        
+        - name: activity-mapping
+          sourceId: xapi-lrs
+          sourceType: statements.object[?objectType='Activity']
+          targetClass: http://adlnet.gov/expapi/ontology/Activity
+          idTemplate: {id}
+          properties:
+            - source: id
+              target: http://adlnet.gov/expapi/ontology/id
+              type: literal
+              datatype: http://www.w3.org/2001/XMLSchema#anyURI
+            - source: definition.name
+              target: http://adlnet.gov/expapi/ontology/name
+              type: localizedString
+            - source: definition.description
+              target: http://adlnet.gov/expapi/ontology/description
+              type: localizedString
+            - source: definition.type
+              target: http://adlnet.gov/expapi/ontology/type
+              type: literal
+              datatype: http://www.w3.org/2001/XMLSchema#anyURI
+
+# Service configuration
+service:
+  endpoints:
+    - path: /sparql
+      type: sparql-endpoint
+      description: SPARQL endpoint for virtual knowledge graph
+      defaultGraph: http://example.org/xapi/kg/
+    
+    - path: /linked-data
+      type: linked-data-api
+      description: Linked Data API for browsing virtual knowledge graph
+      defaultFormat: jsonld
+      formats:
+        - jsonld
+        - turtle
+        - rdfxml
+    
+    - path: /api
+      type: rest-api
+      description: RESTful API for accessing virtual knowledge graph
+      openApiSpec: /rest-api/openapi.yaml
+      hypermedia: true
+  
+  federation:
+    enabled: true
+    endpoints:
+      - http://example.org/sparql
+      - http://another-source.org/sparql
+  
+  caching:
+    enabled: true
+    ttl: 3600
+    strategies:
+      - type: time-based
+        duration: 3600
+      - type: change-detection
+        checkInterval: 300
+  
+  authentication:
+    required: true
+    methods:
+      - type: oauth2
+        issuer: https://auth.example.org
+        audience: https://kg.example.org
+      - type: api-key
+        header: X-API-Key
+  
+  authorization:
+    enabled: true
+    policyStore: https://policies.example.org/xapi
+
+# Data contract integration
+dataContracts:
+  directory: /semantic-layer/data-contracts
+  defaultContract: xapi-data-contract-template.json
+  validation:
+    enabled: true
+    enforceMode: warn
+
+# SHACL validation
+validation:
+  enabled: true
+  shapesGraph: http://adlnet.gov/expapi/ontology/shapes
+  validationReport:
+    format: jsonld
+    store: true
+  conformance:
+    level: strict
+
+# Semantic annotations
+semanticAnnotations:
+  enabled: true
+  sources:
+    - type: ontology
+      id: xapi-ontology
+      graph: core
+  mapping:
+    - source: http://adlnet.gov/expapi/ontology/Statement
+      target: http://www.w3.org/ns/prov#Activity
+      properties:
+        - source: http://adlnet.gov/expapi/ontology/actor
+          target: http://www.w3.org/ns/prov#wasAssociatedWith
+        - source: http://adlnet.gov/expapi/ontology/timestamp
+          target: http://www.w3.org/ns/prov#startedAtTime
+    - source: http://adlnet.gov/expapi/ontology/Actor
+      target: http://www.w3.org/ns/prov#Agent
+    - source: http://adlnet.gov/expapi/ontology/Verb
+      target: http://www.w3.org/ns/prov#InstantaneousEvent
+      
+# Distributed affordances
+affordances:
+  hypermedia:
+    enabled: true
+    mediaTypes:
+      - application/hal+json
+      - application/ld+json
+    profiles:
+      - https://example.org/profiles/xapi
+  
+  contentNegotiation:
+    enabled: true
+    defaultFormat: application/ld+json
+    supportedFormats:
+      - application/ld+json
+      - application/hal+json
+      - text/turtle
+      - application/rdf+xml
+      - application/n-triples
+  
+  discovery:
+    enabled: true
+    mechanisms:
+      - type: well-known
+        path: /.well-known/void
+      - type: service-description
+        path: /service
