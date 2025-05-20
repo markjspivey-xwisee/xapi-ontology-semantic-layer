@@ -1,0 +1,195 @@
+@prefix xapi: <http://adlnet.gov/expapi/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+# xAPI Ontology Core
+xapi: a owl:Ontology ;
+  dc:title "Experience API (xAPI) Ontology"@en ;
+  dc:description "An RDF vocabulary for representing xAPI statements and components."@en ;
+  dcterms:created "2025-05-19"^^xsd:date ;
+  dcterms:modified "2025-05-19"^^xsd:date ;
+  owl:versionInfo "1.0.0" ;
+  dc:creator "xAPI Ontology Working Group" .
+
+# Core Classes
+xapi:Statement a owl:Class ;
+  rdfs:label "Statement"@en ;
+  rdfs:comment "An Experience API Statement that represents an experience (typically a learning experience)."@en .
+
+xapi:Actor a owl:Class ;
+  rdfs:label "Actor"@en ;
+  rdfs:comment "An entity (agent or group) that performs an action within an experience."@en .
+
+xapi:Agent a owl:Class ;
+  rdfs:label "Agent"@en ;
+  rdfs:comment "A person or system that performs an action within an experience."@en ;
+  rdfs:subClassOf xapi:Actor .
+
+xapi:Group a owl:Class ;
+  rdfs:label "Group"@en ;
+  rdfs:comment "A collection of Agents acting as a single Actor."@en ;
+  rdfs:subClassOf xapi:Actor .
+
+xapi:Verb a owl:Class ;
+  rdfs:label "Verb"@en ;
+  rdfs:comment "An action or experience being described in the Statement."@en .
+
+xapi:Object a owl:Class ;
+  rdfs:label "Object"@en ;
+  rdfs:comment "The thing being acted upon in the Statement."@en .
+
+xapi:Activity a owl:Class ;
+  rdfs:label "Activity"@en ;
+  rdfs:comment "A learning or performance activity, task, or experience."@en ;
+  rdfs:subClassOf xapi:Object .
+
+xapi:Result a owl:Class ;
+  rdfs:label "Result"@en ;
+  rdfs:comment "The outcome or result of the experience."@en .
+
+xapi:Context a owl:Class ;
+  rdfs:label "Context"@en ;
+  rdfs:comment "Contextual information about the experience."@en .
+
+xapi:Attachment a owl:Class ;
+  rdfs:label "Attachment"@en ;
+  rdfs:comment "Attachments associated with the Statement."@en .
+
+# Core Properties
+xapi:actor a owl:ObjectProperty ;
+  rdfs:label "actor"@en ;
+  rdfs:comment "The Actor (Agent or Group) who performed the action."@en ;
+  rdfs:domain xapi:Statement ;
+  rdfs:range xapi:Actor .
+
+xapi:verb a owl:ObjectProperty ;
+  rdfs:label "verb"@en ;
+  rdfs:comment "The Verb defining the action of the Statement."@en ;
+  rdfs:domain xapi:Statement ;
+  rdfs:range xapi:Verb .
+
+xapi:object a owl:ObjectProperty ;
+  rdfs:label "object"@en ;
+  rdfs:comment "The Object being acted upon."@en ;
+  rdfs:domain xapi:Statement ;
+  rdfs:range xapi:Object .
+
+xapi:result a owl:ObjectProperty ;
+  rdfs:label "result"@en ;
+  rdfs:comment "The outcome of the experience."@en ;
+  rdfs:domain xapi:Statement ;
+  rdfs:range xapi:Result .
+
+xapi:context a owl:ObjectProperty ;
+  rdfs:label "context"@en ;
+  rdfs:comment "The context that gives the Statement meaning."@en ;
+  rdfs:domain xapi:Statement ;
+  rdfs:range xapi:Context .
+
+xapi:timestamp a owl:DatatypeProperty ;
+  rdfs:label "timestamp"@en ;
+  rdfs:comment "When the experience described by the Statement occurred."@en ;
+  rdfs:domain xapi:Statement ;
+  rdfs:range xsd:dateTime .
+
+xapi:stored a owl:DatatypeProperty ;
+  rdfs:label "stored"@en ;
+  rdfs:comment "When the Statement was stored."@en ;
+  rdfs:domain xapi:Statement ;
+  rdfs:range xsd:dateTime .
+
+xapi:authority a owl:ObjectProperty ;
+  rdfs:label "authority"@en ;
+  rdfs:comment "The Agent who is asserting this Statement is true."@en ;
+  rdfs:domain xapi:Statement ;
+  rdfs:range xapi:Agent .
+
+xapi:version a owl:DatatypeProperty ;
+  rdfs:label "version"@en ;
+  rdfs:comment "The version of the xAPI specification this Statement conforms to."@en ;
+  rdfs:domain xapi:Statement ;
+  rdfs:range xsd:string .
+
+xapi:attachments a owl:ObjectProperty ;
+  rdfs:label "attachments"@en ;
+  rdfs:comment "List of attachments to the Statement."@en ;
+  rdfs:domain xapi:Statement ;
+  rdfs:range xapi:Attachment .
+
+# Actor Properties
+xapi:name a owl:DatatypeProperty ;
+  rdfs:label "name"@en ;
+  rdfs:comment "The name of the Agent or Group."@en ;
+  rdfs:domain xapi:Actor ;
+  rdfs:range xsd:string .
+
+xapi:mbox a owl:DatatypeProperty ;
+  rdfs:label "mbox"@en ;
+  rdfs:comment "The Agent's email address in the form of a mailto URI."@en ;
+  rdfs:domain xapi:Agent ;
+  rdfs:range xsd:anyURI .
+
+xapi:account a owl:ObjectProperty ;
+  rdfs:label "account"@en ;
+  rdfs:comment "An account on an existing system belonging to the Agent."@en ;
+  rdfs:domain xapi:Agent .
+
+# Verb Properties
+xapi:id a owl:DatatypeProperty ;
+  rdfs:label "id"@en ;
+  rdfs:comment "The IRI that uniquely identifies the Verb."@en ;
+  rdfs:domain xapi:Verb ;
+  rdfs:range xsd:anyURI .
+
+xapi:display a owl:ObjectProperty ;
+  rdfs:label "display"@en ;
+  rdfs:comment "Language map of display names for the Verb."@en ;
+  rdfs:domain xapi:Verb .
+
+# Activity Properties
+xapi:definition a owl:ObjectProperty ;
+  rdfs:label "definition"@en ;
+  rdfs:comment "Metadata about the Activity."@en ;
+  rdfs:domain xapi:Activity .
+
+# Result Properties
+xapi:score a owl:ObjectProperty ;
+  rdfs:label "score"@en ;
+  rdfs:comment "The score associated with the experience."@en ;
+  rdfs:domain xapi:Result .
+
+xapi:success a owl:DatatypeProperty ;
+  rdfs:label "success"@en ;
+  rdfs:comment "Whether the experience was successful."@en ;
+  rdfs:domain xapi:Result ;
+  rdfs:range xsd:boolean .
+
+xapi:completion a owl:DatatypeProperty ;
+  rdfs:label "completion"@en ;
+  rdfs:comment "Whether the experience was completed."@en ;
+  rdfs:domain xapi:Result ;
+  rdfs:range xsd:boolean .
+
+# Common Verbs (examples)
+xapi:Completed a xapi:Verb ;
+  xapi:id <http://adlnet.gov/expapi/verbs/completed> ;
+  xapi:display "completed"@en .
+
+xapi:Experienced a xapi:Verb ;
+  xapi:id <http://adlnet.gov/expapi/verbs/experienced> ;
+  xapi:display "experienced"@en .
+
+xapi:Answered a xapi:Verb ;
+  xapi:id <http://adlnet.gov/expapi/verbs/answered> ;
+  xapi:display "answered"@en .
+
+xapi:Attempted a xapi:Verb ;
+  xapi:id <http://adlnet.gov/expapi/verbs/attempted> ;
+  xapi:display "attempted"@en .
