@@ -1,0 +1,157 @@
+{
+  "@context": {
+    "dct": "http://purl.org/dc/terms/",
+    "schema": "http://schema.org/",
+    "xapi": "http://adlnet.gov/expapi/ontology/",
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "dprod": "http://dataprod.org/vocabulary#",
+    "sh": "http://www.w3.org/ns/shacl#",
+    "prov": "http://www.w3.org/ns/prov#"
+  },
+  "@id": "urn:uuid:{{data_contract_uuid}}",
+  "@type": ["dprod:DataContract", "dcat:Dataset"],
+  "dct:title": "xAPI Data Contract",
+  "dct:description": "A data contract for the xAPI learning experience data",
+  "dct:created": "{{creation_date}}",
+  "dct:modified": "{{last_modified_date}}",
+  "dct:publisher": {
+    "@type": "schema:Organization",
+    "schema:name": "{{publisher_name}}"
+  },
+  "dct:license": "https://creativecommons.org/licenses/by/4.0/",
+  "schema:version": "1.0.0",
+  
+  "dprod:provider": {
+    "@id": "{{provider_id}}",
+    "@type": "dprod:DataProvider",
+    "schema:name": "{{provider_name}}",
+    "schema:description": "{{provider_description}}"
+  },
+  
+  "dprod:consumer": {
+    "@id": "{{consumer_id}}",
+    "@type": "dprod:DataConsumer",
+    "schema:name": "{{consumer_name}}",
+    "schema:description": "{{consumer_description}}"
+  },
+  
+  "dprod:dataModel": {
+    "@type": "dprod:DataModel",
+    "dprod:schema": "{{schema_location}}",
+    "dprod:validationRules": [
+      {
+        "@id": "{{rule_id_1}}",
+        "@type": "sh:NodeShape",
+        "sh:targetClass": "xapi:Statement",
+        "sh:property": {
+          "sh:path": "xapi:actor",
+          "sh:minCount": 1
+        }
+      },
+      {
+        "@id": "{{rule_id_2}}",
+        "@type": "sh:NodeShape",
+        "sh:targetClass": "xapi:Verb",
+        "sh:property": {
+          "sh:path": "xapi:id",
+          "sh:minCount": 1
+        }
+      }
+    ],
+    "dprod:semanticAnnotations": [
+      {
+        "@type": "dprod:SemanticAnnotation",
+        "dprod:source": "xapi:Statement.actor",
+        "dprod:target": "foaf:Agent",
+        "dprod:mappingExpression": "{{mapping_expression_1}}"
+      },
+      {
+        "@type": "dprod:SemanticAnnotation",
+        "dprod:source": "xapi:Statement.verb",
+        "dprod:target": "prov:Activity",
+        "dprod:mappingExpression": "{{mapping_expression_2}}"
+      }
+    ]
+  },
+  
+  "dprod:serviceLevel": {
+    "@type": "dprod:ServiceLevelAgreement",
+    "dprod:availability": "99.9%",
+    "dprod:responseTime": "< 500ms",
+    "dprod:throughput": "1000 requests/minute",
+    "dprod:supportWindow": "24/7"
+  },
+  
+  "dprod:accessControl": {
+    "@type": "dprod:AccessControl",
+    "dprod:authMethod": "OAuth2.0",
+    "dprod:endpoint": "{{auth_endpoint}}",
+    "dprod:scope": ["read:xapi", "write:xapi"],
+    "dprod:tokenExpiry": "3600s"
+  },
+  
+  "dcat:distribution": [
+    {
+      "@type": "dcat:Distribution",
+      "dcat:accessURL": "{{api_endpoint}}/statements",
+      "dcat:mediaType": "application/json",
+      "dprod:protocol": "HTTPS/REST",
+      "dcat:downloadURL": "{{api_endpoint}}/statements/export"
+    },
+    {
+      "@type": "dcat:Distribution",
+      "dcat:accessURL": "{{api_endpoint}}/statements.jsonld",
+      "dcat:mediaType": "application/ld+json",
+      "dprod:protocol": "HTTPS/REST"
+    },
+    {
+      "@type": "dcat:Distribution",
+      "dcat:accessURL": "{{sparql_endpoint}}",
+      "dcat:mediaType": "application/sparql-query",
+      "dprod:protocol": "SPARQL"
+    }
+  ],
+  
+  "dprod:eventSchema": {
+    "@type": "dprod:EventSchema",
+    "dprod:eventTypes": [
+      {
+        "@type": "dprod:EventType",
+        "dprod:name": "StatementCreated",
+        "dprod:description": "A new xAPI statement was created",
+        "dprod:payloadSchema": "{{event_schema_location}}/statement-created.json"
+      },
+      {
+        "@type": "dprod:EventType",
+        "dprod:name": "StatementVoided",
+        "dprod:description": "An xAPI statement was voided",
+        "dprod:payloadSchema": "{{event_schema_location}}/statement-voided.json"
+      }
+    ],
+    "dprod:deliveryMethod": {
+      "@type": "dprod:DeliveryMethod",
+      "dprod:protocol": "webhook",
+      "dprod:endpoint": "{{webhook_endpoint}}",
+      "dprod:format": "application/json"
+    }
+  },
+  
+  "dprod:governance": {
+    "@type": "dprod:GovernancePolicy",
+    "dprod:dataRetention": "365 days",
+    "dprod:dataPrivacyClass": "sensitive",
+    "dprod:dataResidency": ["US", "EU"],
+    "dprod:auditLogging": true,
+    "dprod:complianceFrameworks": ["GDPR", "HIPAA", "FERPA"]
+  },
+  
+  "prov:wasGeneratedBy": {
+    "@type": "prov:Activity",
+    "prov:startedAtTime": "{{generation_start_time}}",
+    "prov:endedAtTime": "{{generation_end_time}}",
+    "prov:wasAssociatedWith": {
+      "@type": "prov:Agent",
+      "schema:name": "Data Contract Generator"
+    }
+  }
+}
