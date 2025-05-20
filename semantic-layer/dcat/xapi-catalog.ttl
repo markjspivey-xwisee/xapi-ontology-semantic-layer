@@ -1,0 +1,215 @@
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xapi: <http://adlnet.gov/expapi/ontology/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+# xAPI Data Catalog
+<http://example.org/xapi/catalog> a dcat:Catalog ;
+    dct:title "xAPI Learning Experience Data Catalog"@en ;
+    dct:description "A comprehensive catalog of learning experience data based on the xAPI specification"@en ;
+    dcat:themeTaxonomy <http://example.org/xapi/themes> ;
+    dct:issued "2025-05-19"^^xsd:date ;
+    dct:modified "2025-05-19"^^xsd:date ;
+    dct:language <http://id.loc.gov/vocabulary/iso639-1/en> ;
+    dct:license <http://creativecommons.org/licenses/by/4.0/> ;
+    dct:publisher [
+        a foaf:Organization ;
+        foaf:name "xAPI Ontology Working Group" ;
+        foaf:homepage <http://example.org/xapi/group>
+    ] ;
+    dcat:dataset <http://example.org/xapi/dataset/statements>,
+                <http://example.org/xapi/dataset/activities>,
+                <http://example.org/xapi/dataset/agents>,
+                <http://example.org/xapi/dataset/verbs> .
+
+# xAPI Statements Dataset
+<http://example.org/xapi/dataset/statements> a dcat:Dataset ;
+    dct:title "xAPI Statements Dataset"@en ;
+    dct:description "Collection of xAPI Statements representing learning experiences"@en ;
+    dct:issued "2025-05-19"^^xsd:date ;
+    dct:modified "2025-05-19"^^xsd:date ;
+    dct:publisher [
+        a foaf:Organization ;
+        foaf:name "xAPI Ontology Working Group"
+    ] ;
+    dct:language <http://id.loc.gov/vocabulary/iso639-1/en> ;
+    dcat:keyword "xAPI", "Experience API", "learning", "education", "training", "statements" ;
+    dcat:theme <http://example.org/xapi/themes/learning> ;
+    dct:accrualPeriodicity <http://purl.org/cld/freq/continuous> ;
+    dct:conformsTo <http://adlnet.gov/expapi/ontology/> ;
+    void:vocabulary <http://adlnet.gov/expapi/ontology/> ;
+    dcat:contactPoint [
+        a vcard:Kind ;
+        vcard:fn "xAPI Support" ;
+        vcard:hasEmail <mailto:support@example.org>
+    ] ;
+    dcat:distribution <http://example.org/xapi/distribution/statements/api>,
+                     <http://example.org/xapi/distribution/statements/jsonld>,
+                     <http://example.org/xapi/distribution/statements/rdf>,
+                     <http://example.org/xapi/distribution/statements/sparql> .
+
+# xAPI Activities Dataset
+<http://example.org/xapi/dataset/activities> a dcat:Dataset ;
+    dct:title "xAPI Activities Dataset"@en ;
+    dct:description "Collection of xAPI Activity definitions"@en ;
+    dct:issued "2025-05-19"^^xsd:date ;
+    dct:modified "2025-05-19"^^xsd:date ;
+    dct:publisher [
+        a foaf:Organization ;
+        foaf:name "xAPI Ontology Working Group"
+    ] ;
+    dcat:keyword "xAPI", "Activities", "learning activities" ;
+    dct:conformsTo <http://adlnet.gov/expapi/ontology/> ;
+    dcat:distribution <http://example.org/xapi/distribution/activities/api>,
+                     <http://example.org/xapi/distribution/activities/jsonld> .
+
+# xAPI Agents Dataset
+<http://example.org/xapi/dataset/agents> a dcat:Dataset ;
+    dct:title "xAPI Agents Dataset"@en ;
+    dct:description "Collection of xAPI Agents (learners, instructors, systems)"@en ;
+    dct:issued "2025-05-19"^^xsd:date ;
+    dct:modified "2025-05-19"^^xsd:date ;
+    dct:publisher [
+        a foaf:Organization ;
+        foaf:name "xAPI Ontology Working Group"
+    ] ;
+    dcat:keyword "xAPI", "Agents", "Learners", "Instructors" ;
+    dct:conformsTo <http://adlnet.gov/expapi/ontology/> ;
+    dcat:distribution <http://example.org/xapi/distribution/agents/api>,
+                     <http://example.org/xapi/distribution/agents/jsonld> .
+
+# xAPI Verbs Dataset
+<http://example.org/xapi/dataset/verbs> a dcat:Dataset ;
+    dct:title "xAPI Verbs Dataset"@en ;
+    dct:description "Registry of standardized xAPI Verbs"@en ;
+    dct:issued "2025-05-19"^^xsd:date ;
+    dct:modified "2025-05-19"^^xsd:date ;
+    dct:publisher [
+        a foaf:Organization ;
+        foaf:name "xAPI Ontology Working Group"
+    ] ;
+    dcat:keyword "xAPI", "Verbs", "Actions" ;
+    dct:conformsTo <http://adlnet.gov/expapi/ontology/> ;
+    dcat:distribution <http://example.org/xapi/distribution/verbs/api>,
+                     <http://example.org/xapi/distribution/verbs/jsonld> .
+
+# Distributions
+
+# Statements API Distribution
+<http://example.org/xapi/distribution/statements/api> a dcat:Distribution ;
+    dct:title "xAPI Statements REST API"@en ;
+    dct:description "RESTful API for accessing xAPI Statements"@en ;
+    dcat:accessURL <http://example.org/xapi/api/statements> ;
+    dct:issued "2025-05-19"^^xsd:date ;
+    dcat:mediaType "application/json" ;
+    dcat:downloadURL <http://example.org/xapi/api/statements.json> ;
+    dct:conformsTo <http://adlnet.gov/expapi/> ;
+    dct:license <http://creativecommons.org/licenses/by/4.0/> .
+
+# Statements JSON-LD Distribution
+<http://example.org/xapi/distribution/statements/jsonld> a dcat:Distribution ;
+    dct:title "xAPI Statements as JSON-LD"@en ;
+    dct:description "xAPI Statements in JSON-LD format for semantic interoperability"@en ;
+    dcat:accessURL <http://example.org/xapi/api/statements.jsonld> ;
+    dct:issued "2025-05-19"^^xsd:date ;
+    dcat:mediaType "application/ld+json" ;
+    dct:conformsTo <http://adlnet.gov/expapi/ontology/> ;
+    dct:license <http://creativecommons.org/licenses/by/4.0/> .
+
+# Statements RDF Distribution
+<http://example.org/xapi/distribution/statements/rdf> a dcat:Distribution ;
+    dct:title "xAPI Statements as RDF"@en ;
+    dct:description "xAPI Statements in RDF format (Turtle serialization)"@en ;
+    dcat:accessURL <http://example.org/xapi/api/statements.ttl> ;
+    dct:issued "2025-05-19"^^xsd:date ;
+    dcat:mediaType "text/turtle" ;
+    dct:conformsTo <http://adlnet.gov/expapi/ontology/> ;
+    dct:license <http://creativecommons.org/licenses/by/4.0/> .
+
+# Statements SPARQL Endpoint
+<http://example.org/xapi/distribution/statements/sparql> a dcat:Distribution ;
+    dct:title "xAPI SPARQL Endpoint"@en ;
+    dct:description "SPARQL endpoint for querying xAPI Statement data"@en ;
+    dcat:accessURL <http://example.org/xapi/sparql> ;
+    dct:issued "2025-05-19"^^xsd:date ;
+    dcat:mediaType "application/sparql-query" ;
+    dct:conformsTo <http://www.w3.org/TR/sparql11-protocol/> ;
+    dct:license <http://creativecommons.org/licenses/by/4.0/> .
+
+# Activities API Distribution
+<http://example.org/xapi/distribution/activities/api> a dcat:Distribution ;
+    dct:title "xAPI Activities REST API"@en ;
+    dct:description "RESTful API for accessing xAPI Activity definitions"@en ;
+    dcat:accessURL <http://example.org/xapi/api/activities> ;
+    dct:issued "2025-05-19"^^xsd:date ;
+    dcat:mediaType "application/json" ;
+    dct:conformsTo <http://adlnet.gov/expapi/> ;
+    dct:license <http://creativecommons.org/licenses/by/4.0/> .
+
+# Activities JSON-LD Distribution
+<http://example.org/xapi/distribution/activities/jsonld> a dcat:Distribution ;
+    dct:title "xAPI Activities as JSON-LD"@en ;
+    dct:description "xAPI Activity definitions in JSON-LD format"@en ;
+    dcat:accessURL <http://example.org/xapi/api/activities.jsonld> ;
+    dct:issued "2025-05-19"^^xsd:date ;
+    dcat:mediaType "application/ld+json" ;
+    dct:conformsTo <http://adlnet.gov/expapi/ontology/> ;
+    dct:license <http://creativecommons.org/licenses/by/4.0/> .
+
+# Agents API Distribution
+<http://example.org/xapi/distribution/agents/api> a dcat:Distribution ;
+    dct:title "xAPI Agents REST API"@en ;
+    dct:description "RESTful API for accessing xAPI Agent profiles"@en ;
+    dcat:accessURL <http://example.org/xapi/api/agents> ;
+    dct:issued "2025-05-19"^^xsd:date ;
+    dcat:mediaType "application/json" ;
+    dct:conformsTo <http://adlnet.gov/expapi/> ;
+    dct:license <http://creativecommons.org/licenses/by/4.0/> .
+
+# Agents JSON-LD Distribution
+<http://example.org/xapi/distribution/agents/jsonld> a dcat:Distribution ;
+    dct:title "xAPI Agents as JSON-LD"@en ;
+    dct:description "xAPI Agent profiles in JSON-LD format"@en ;
+    dcat:accessURL <http://example.org/xapi/api/agents.jsonld> ;
+    dct:issued "2025-05-19"^^xsd:date ;
+    dcat:mediaType "application/ld+json" ;
+    dct:conformsTo <http://adlnet.gov/expapi/ontology/> ;
+    dct:license <http://creativecommons.org/licenses/by/4.0/> .
+
+# Verbs API Distribution
+<http://example.org/xapi/distribution/verbs/api> a dcat:Distribution ;
+    dct:title "xAPI Verbs REST API"@en ;
+    dct:description "RESTful API for accessing xAPI Verb definitions"@en ;
+    dcat:accessURL <http://example.org/xapi/api/verbs> ;
+    dct:issued "2025-05-19"^^xsd:date ;
+    dcat:mediaType "application/json" ;
+    dct:conformsTo <http://adlnet.gov/expapi/> ;
+    dct:license <http://creativecommons.org/licenses/by/4.0/> .
+
+# Verbs JSON-LD Distribution
+<http://example.org/xapi/distribution/verbs/jsonld> a dcat:Distribution ;
+    dct:title "xAPI Verbs as JSON-LD"@en ;
+    dct:description "xAPI Verb definitions in JSON-LD format"@en ;
+    dcat:accessURL <http://example.org/xapi/api/verbs.jsonld> ;
+    dct:issued "2025-05-19"^^xsd:date ;
+    dcat:mediaType "application/ld+json" ;
+    dct:conformsTo <http://adlnet.gov/expapi/ontology/> ;
+    dct:license <http://creativecommons.org/licenses/by/4.0/> .
+
+# Provenance Information
+<http://example.org/xapi/catalog> prov:wasGeneratedBy [
+    a prov:Activity ;
+    prov:startedAtTime "2025-05-19T00:00:00Z"^^xsd:dateTime ;
+    prov:endedAtTime "2025-05-19T12:00:00Z"^^xsd:dateTime ;
+    prov:wasAssociatedWith [
+        a prov:Agent, foaf:Person ;
+        foaf:name "xAPI Ontology Working Group" ;
+    ] ;
+    prov:used <http://adlnet.gov/expapi/>, <http://www.w3.org/ns/dcat#> ;
+] .
