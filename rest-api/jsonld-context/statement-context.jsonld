@@ -1,0 +1,270 @@
+{
+  "@context": {
+    "xapi": "http://adlnet.gov/expapi/ontology/",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "dct": "http://purl.org/dc/terms/",
+    "schema": "http://schema.org/",
+    
+    "Statement": "xapi:Statement",
+    "Agent": "xapi:Agent",
+    "Group": "xapi:Group",
+    "Verb": "xapi:Verb",
+    "Activity": "xapi:Activity",
+    "Result": "xapi:Result",
+    "Context": "xapi:Context",
+    "StatementRef": "xapi:StatementRef",
+    "Attachment": "xapi:Attachment",
+
+    "id": {
+      "@id": "xapi:id"
+    },
+    "actor": {
+      "@id": "xapi:actor",
+      "@type": "@id"
+    },
+    "verb": {
+      "@id": "xapi:verb",
+      "@type": "@id"
+    },
+    "object": {
+      "@id": "xapi:object",
+      "@type": "@id"
+    },
+    "result": {
+      "@id": "xapi:result",
+      "@type": "@id"
+    },
+    "context": {
+      "@id": "xapi:context",
+      "@type": "@id"
+    },
+    "timestamp": {
+      "@id": "xapi:timestamp",
+      "@type": "xsd:dateTime"
+    },
+    "stored": {
+      "@id": "xapi:stored",
+      "@type": "xsd:dateTime"
+    },
+    "authority": {
+      "@id": "xapi:authority",
+      "@type": "@id"
+    },
+    "version": {
+      "@id": "xapi:version"
+    },
+    "attachments": {
+      "@id": "xapi:attachments",
+      "@container": "@list"
+    },
+    
+    "objectType": {
+      "@id": "rdf:type",
+      "@type": "@id"
+    },
+    "name": {
+      "@id": "xapi:name"
+    },
+    "mbox": {
+      "@id": "xapi:mbox",
+      "@type": "xsd:anyURI"
+    },
+    "mbox_sha1sum": {
+      "@id": "xapi:mbox_sha1sum"
+    },
+    "openid": {
+      "@id": "xapi:openid",
+      "@type": "xsd:anyURI"
+    },
+    "account": {
+      "@id": "xapi:account",
+      "@type": "@id"
+    },
+    "homePage": {
+      "@id": "xapi:homePage",
+      "@type": "xsd:anyURI"
+    },
+    "member": {
+      "@id": "xapi:member",
+      "@container": "@list"
+    },
+    
+    "display": {
+      "@id": "xapi:display",
+      "@container": "@language"
+    },
+    
+    "definition": {
+      "@id": "xapi:definition",
+      "@type": "@id"
+    },
+    "type": {
+      "@id": "xapi:type",
+      "@type": "xsd:anyURI"
+    },
+    "moreInfo": {
+      "@id": "xapi:moreInfo",
+      "@type": "xsd:anyURI"
+    },
+    "interactionType": {
+      "@id": "xapi:interactionType"
+    },
+    "correctResponsesPattern": {
+      "@id": "xapi:correctResponsesPattern",
+      "@container": "@list"
+    },
+    "choices": {
+      "@id": "xapi:choices",
+      "@container": "@list"
+    },
+    "scale": {
+      "@id": "xapi:scale",
+      "@container": "@list"
+    },
+    "source": {
+      "@id": "xapi:source",
+      "@container": "@list"
+    },
+    "target": {
+      "@id": "xapi:target",
+      "@container": "@list"
+    },
+    "steps": {
+      "@id": "xapi:steps",
+      "@container": "@list"
+    },
+    
+    "score": {
+      "@id": "xapi:score",
+      "@type": "@id"
+    },
+    "scaled": {
+      "@id": "xapi:scaled",
+      "@type": "xsd:decimal"
+    },
+    "raw": {
+      "@id": "xapi:raw",
+      "@type": "xsd:decimal"
+    },
+    "min": {
+      "@id": "xapi:min",
+      "@type": "xsd:decimal"
+    },
+    "max": {
+      "@id": "xapi:max",
+      "@type": "xsd:decimal"
+    },
+    "success": {
+      "@id": "xapi:success",
+      "@type": "xsd:boolean"
+    },
+    "completion": {
+      "@id": "xapi:completion",
+      "@type": "xsd:boolean"
+    },
+    "response": {
+      "@id": "xapi:response"
+    },
+    "duration": {
+      "@id": "xapi:duration",
+      "@type": "xsd:duration"
+    },
+    
+    "registration": {
+      "@id": "xapi:registration",
+      "@type": "xsd:string"
+    },
+    "instructor": {
+      "@id": "xapi:instructor",
+      "@type": "@id"
+    },
+    "team": {
+      "@id": "xapi:team",
+      "@type": "@id"
+    },
+    "contextActivities": {
+      "@id": "xapi:contextActivities",
+      "@type": "@id"
+    },
+    "parent": {
+      "@id": "xapi:parent",
+      "@type": "@id",
+      "@container": "@list"
+    },
+    "grouping": {
+      "@id": "xapi:grouping",
+      "@type": "@id",
+      "@container": "@list"
+    },
+    "category": {
+      "@id": "xapi:category",
+      "@type": "@id",
+      "@container": "@list"
+    },
+    "other": {
+      "@id": "xapi:other",
+      "@type": "@id",
+      "@container": "@list"
+    },
+    "revision": {
+      "@id": "xapi:revision"
+    },
+    "platform": {
+      "@id": "xapi:platform"
+    },
+    "language": {
+      "@id": "xapi:language"
+    },
+    "statement": {
+      "@id": "xapi:statement",
+      "@type": "@id"
+    },
+    
+    "usageType": {
+      "@id": "xapi:usageType",
+      "@type": "xsd:anyURI"
+    },
+    "contentType": {
+      "@id": "xapi:contentType"
+    },
+    "length": {
+      "@id": "xapi:length",
+      "@type": "xsd:integer"
+    },
+    "sha2": {
+      "@id": "xapi:sha2"
+    },
+    "fileUrl": {
+      "@id": "xapi:fileUrl",
+      "@type": "xsd:anyURI"
+    },
+    
+    "extensions": {
+      "@id": "xapi:extensions"
+    },
+    "description": {
+      "@id": "xapi:description",
+      "@container": "@language"
+    },
+    
+    "_links": {
+      "@id": "https://hypermedia.org/links",
+      "@type": "@id"
+    },
+    "href": {
+      "@id": "https://hypermedia.org/href",
+      "@type": "xsd:anyURI"
+    },
+    "rel": {
+      "@id": "https://hypermedia.org/rel"
+    },
+    "title": {
+      "@id": "https://hypermedia.org/title"
+    }
+  }
+}
