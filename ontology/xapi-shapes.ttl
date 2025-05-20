@@ -1,0 +1,369 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xapi: <http://adlnet.gov/expapi/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+
+# SHACL Shapes for xAPI Validation
+
+# Statement Shape
+xapi:StatementShape a sh:NodeShape ;
+  sh:targetClass xapi:Statement ;
+  sh:closed false ;
+  rdfs:label "Statement Shape"@en ;
+  rdfs:comment "Constraints for validating xAPI Statements"@en ;
+  
+  # Required properties
+  sh:property [
+    sh:path xapi:actor ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:message "A Statement must have exactly one actor property."@en ;
+    sh:node xapi:ActorShape ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:verb ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:message "A Statement must have exactly one verb property."@en ;
+    sh:node xapi:VerbShape ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:object ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:message "A Statement must have exactly one object property."@en ;
+  ] ;
+  
+  # Optional properties with constraints
+  sh:property [
+    sh:path xapi:result ;
+    sh:maxCount 1 ;
+    sh:node xapi:ResultShape ;
+    sh:message "If present, result must conform to the Result Shape."@en ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:context ;
+    sh:maxCount 1 ;
+    sh:node xapi:ContextShape ;
+    sh:message "If present, context must conform to the Context Shape."@en ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:timestamp ;
+    sh:datatype xsd:dateTime ;
+    sh:maxCount 1 ;
+    sh:message "If present, timestamp must be a valid xsd:dateTime."@en ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:stored ;
+    sh:datatype xsd:dateTime ;
+    sh:maxCount 1 ;
+    sh:message "If present, stored must be a valid xsd:dateTime."@en ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:authority ;
+    sh:maxCount 1 ;
+    sh:node xapi:AgentShape ;
+    sh:message "If present, authority must conform to the Agent Shape."@en ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:version ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:message "If present, version must be a valid string."@en ;
+  ] .
+
+# Actor Shape
+xapi:ActorShape a sh:NodeShape ;
+  sh:targetClass xapi:Actor ;
+  rdfs:label "Actor Shape"@en ;
+  rdfs:comment "Constraints for validating xAPI Actors (Agents and Groups)"@en ;
+  
+  # An Actor must be either an Agent or a Group
+  sh:or (
+    [ sh:node xapi:AgentShape ]
+    [ sh:node xapi:GroupShape ]
+  ) ;
+  
+  sh:property [
+    sh:path xapi:name ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+  ] .
+
+# Agent Shape
+xapi:AgentShape a sh:NodeShape ;
+  sh:targetClass xapi:Agent ;
+  rdfs:label "Agent Shape"@en ;
+  rdfs:comment "Constraints for validating xAPI Agents"@en ;
+  
+  # An Agent must have at least one identifying property
+  sh:or (
+    [ sh:property [
+        sh:path xapi:mbox ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:anyURI ;
+        sh:pattern "^mailto:.+@.+" ;
+      ]
+    ]
+    [ sh:property [
+        sh:path xapi:mbox_sha1sum ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+      ]
+    ]
+    [ sh:property [
+        sh:path xapi:openid ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:anyURI ;
+      ]
+    ]
+    [ sh:property [
+        sh:path xapi:account ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:node xapi:AccountShape ;
+      ]
+    ]
+  ) .
+
+# Account Shape
+xapi:AccountShape a sh:NodeShape ;
+  rdfs:label "Account Shape"@en ;
+  rdfs:comment "Constraints for validating xAPI Accounts"@en ;
+  
+  sh:property [
+    sh:path xapi:homePage ;
+    sh:datatype xsd:anyURI ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:message "An Account must have exactly one homePage property."@en ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:name ;
+    sh:datatype xsd:string ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:message "An Account must have exactly one name property."@en ;
+  ] .
+
+# Group Shape
+xapi:GroupShape a sh:NodeShape ;
+  sh:targetClass xapi:Group ;
+  rdfs:label "Group Shape"@en ;
+  rdfs:comment "Constraints for validating xAPI Groups"@en ;
+  
+  # A Group must have the member property or be an Identified Group
+  sh:or (
+    [ sh:property [
+        sh:path xapi:member ;
+        sh:minCount 1 ;
+      ]
+    ]
+    [ sh:or (
+        [ sh:property [
+            sh:path xapi:mbox ;
+            sh:minCount 1 ;
+            sh:maxCount 1 ;
+          ]
+        ]
+        [ sh:property [
+            sh:path xapi:mbox_sha1sum ;
+            sh:minCount 1 ;
+            sh:maxCount 1 ;
+          ]
+        ]
+        [ sh:property [
+            sh:path xapi:openid ;
+            sh:minCount 1 ;
+            sh:maxCount 1 ;
+          ]
+        ]
+        [ sh:property [
+            sh:path xapi:account ;
+            sh:minCount 1 ;
+            sh:maxCount 1 ;
+          ]
+        ]
+      )
+    ]
+  ) ;
+  
+  sh:property [
+    sh:path xapi:member ;
+    sh:node xapi:AgentShape ;
+  ] .
+
+# Verb Shape
+xapi:VerbShape a sh:NodeShape ;
+  sh:targetClass xapi:Verb ;
+  rdfs:label "Verb Shape"@en ;
+  rdfs:comment "Constraints for validating xAPI Verbs"@en ;
+  
+  sh:property [
+    sh:path xapi:id ;
+    sh:datatype xsd:anyURI ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:message "A Verb must have exactly one id property, which must be an IRI."@en ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:display ;
+    sh:maxCount 1 ;
+    sh:message "If present, a Verb must have at most one display property."@en ;
+  ] .
+
+# Result Shape
+xapi:ResultShape a sh:NodeShape ;
+  sh:targetClass xapi:Result ;
+  rdfs:label "Result Shape"@en ;
+  rdfs:comment "Constraints for validating xAPI Results"@en ;
+  
+  sh:property [
+    sh:path xapi:score ;
+    sh:maxCount 1 ;
+    sh:node xapi:ScoreShape ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:success ;
+    sh:datatype xsd:boolean ;
+    sh:maxCount 1 ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:completion ;
+    sh:datatype xsd:boolean ;
+    sh:maxCount 1 ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:response ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:duration ;
+    sh:datatype xsd:duration ;
+    sh:maxCount 1 ;
+  ] .
+
+# Score Shape
+xapi:ScoreShape a sh:NodeShape ;
+  rdfs:label "Score Shape"@en ;
+  rdfs:comment "Constraints for validating xAPI Scores"@en ;
+  
+  sh:property [
+    sh:path xapi:scaled ;
+    sh:datatype xsd:decimal ;
+    sh:maxCount 1 ;
+    sh:minInclusive -1 ;
+    sh:maxInclusive 1 ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:raw ;
+    sh:datatype xsd:decimal ;
+    sh:maxCount 1 ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:min ;
+    sh:datatype xsd:decimal ;
+    sh:maxCount 1 ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:max ;
+    sh:datatype xsd:decimal ;
+    sh:maxCount 1 ;
+  ] .
+
+# Context Shape
+xapi:ContextShape a sh:NodeShape ;
+  sh:targetClass xapi:Context ;
+  rdfs:label "Context Shape"@en ;
+  rdfs:comment "Constraints for validating xAPI Context"@en ;
+  
+  sh:property [
+    sh:path xapi:registration ;
+    sh:datatype xsd:string ;
+    sh:pattern "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$" ;
+    sh:maxCount 1 ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:instructor ;
+    sh:node xapi:ActorShape ;
+    sh:maxCount 1 ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:team ;
+    sh:node xapi:GroupShape ;
+    sh:maxCount 1 ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:contextActivities ;
+    sh:maxCount 1 ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:revision ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:platform ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:language ;
+    sh:datatype xsd:string ;
+    sh:pattern "^[a-z]{2,3}(-[A-Z]{2,3})?$" ;
+    sh:maxCount 1 ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:statement ;
+    sh:node xapi:StatementRefShape ;
+    sh:maxCount 1 ;
+  ] .
+
+# StatementRef Shape
+xapi:StatementRefShape a sh:NodeShape ;
+  rdfs:label "Statement Reference Shape"@en ;
+  rdfs:comment "Constraints for validating xAPI Statement References"@en ;
+  
+  sh:property [
+    sh:path rdf:type ;
+    sh:hasValue xapi:StatementRef ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+  ] ;
+  
+  sh:property [
+    sh:path xapi:id ;
+    sh:datatype xsd:string ;
+    sh:pattern "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$" ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+  ] .
