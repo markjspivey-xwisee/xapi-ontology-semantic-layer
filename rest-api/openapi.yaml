@@ -1,0 +1,888 @@
+openapi: 3.0.3
+info:
+  title: xAPI Ontology RESTful HATEOAS API
+  description: |
+    A hypermedia-driven RESTful API for xAPI statements and components, 
+    supporting linked data principles and distributed affordances.
+  version: 1.0.0
+  contact:
+    name: xAPI Ontology Working Group
+    url: http://example.org/xapi/group
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: https://api.example.org/xapi/v1
+    description: Main (production) API server
+  - url: https://api.staging.example.org/xapi/v1
+    description: Staging API server
+
+tags:
+  - name: statements
+    description: Operations related to xAPI statements
+  - name: activities
+    description: Operations related to xAPI activities
+  - name: agents
+    description: Operations related to xAPI agents
+  - name: verbs
+    description: Operations related to xAPI verbs
+  - name: discovery
+    description: Hypermedia-based API discovery endpoints
+
+paths:
+  /:
+    get:
+      tags:
+        - discovery
+      summary: API root with hypermedia links
+      description: Returns the API root with hypermedia links to available resources and operations
+      operationId: getApiRoot
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/ApiRoot'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/ApiRoot'
+
+  /statements:
+    get:
+      tags:
+        - statements
+      summary: Get statements
+      description: Returns xAPI statements based on various filters
+      operationId: getStatements
+      parameters:
+        - name: agent
+          in: query
+          description: Filter by agent
+          schema:
+            type: string
+        - name: verb
+          in: query
+          description: Filter by verb ID
+          schema:
+            type: string
+            format: uri
+        - name: activity
+          in: query
+          description: Filter by activity ID
+          schema:
+            type: string
+            format: uri
+        - name: since
+          in: query
+          description: Filter by timestamp (statements stored since this time)
+          schema:
+            type: string
+            format: date-time
+        - name: until
+          in: query
+          description: Filter by timestamp (statements stored before this time)
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          description: Maximum number of statements to return
+          schema:
+            type: integer
+            default: 50
+            maximum: 500
+        - name: cursor
+          in: query
+          description: Cursor for pagination
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          headers:
+            Link:
+              description: Hypermedia links for navigation and related resources
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Statement'
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResource'
+                  - type: object
+                    properties:
+                      _embedded:
+                        type: object
+                        properties:
+                          statements:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Statement'
+            application/ld+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Statement'
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    post:
+      tags:
+        - statements
+      summary: Create new statement
+      description: Creates a new xAPI statement
+      operationId: createStatement
+      requestBody:
+        description: Statement to create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Statement'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/Statement'
+      responses:
+        '201':
+          description: Statement created
+          headers:
+            Location:
+              description: URI of the created statement
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    description: ID of the created statement
+            application/hal+json:
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        description: ID of the created statement
+                  - $ref: '#/components/schemas/HypermediaLinks'
+            application/ld+json:
+              schema:
+                type: object
+                properties:
+                  '@context':
+                    type: string
+                    format: uri
+                    default: 'https://api.example.org/xapi/v1/contexts/statement.jsonld'
+                  '@id':
+                    type: string
+                    format: uri
+                    description: URI of the created statement
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /statements/{statementId}:
+    get:
+      tags:
+        - statements
+      summary: Get statement by ID
+      description: Returns a single xAPI statement by ID
+      operationId: getStatementById
+      parameters:
+        - name: statementId
+          in: path
+          description: ID of statement to return
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Statement'
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Statement'
+                  - $ref: '#/components/schemas/HypermediaLinks'
+            application/ld+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Statement'
+                  - type: object
+                    properties:
+                      '@context':
+                        type: string
+                        format: uri
+        '404':
+          description: Statement not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /activities:
+    get:
+      tags:
+        - activities
+      summary: Get activities
+      description: Returns xAPI activities
+      operationId: getActivities
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of activities to return
+          schema:
+            type: integer
+            default: 50
+            maximum: 500
+        - name: cursor
+          in: query
+          description: Cursor for pagination
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResource'
+                  - type: object
+                    properties:
+                      _embedded:
+                        type: object
+                        properties:
+                          activities:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Activity'
+            application/ld+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Activity'
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /activities/{activityId}:
+    get:
+      tags:
+        - activities
+      summary: Get activity by ID
+      description: Returns a single xAPI activity by ID
+      operationId: getActivityById
+      parameters:
+        - name: activityId
+          in: path
+          description: ID of activity to return (URI)
+          required: true
+          schema:
+            type: string
+            format: uri
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Activity'
+                  - $ref: '#/components/schemas/HypermediaLinks'
+            application/ld+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Activity'
+                  - type: object
+                    properties:
+                      '@context':
+                        type: string
+                        format: uri
+        '404':
+          description: Activity not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /agents:
+    get:
+      tags:
+        - agents
+      summary: Get agents
+      description: Returns xAPI agents
+      operationId: getAgents
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of agents to return
+          schema:
+            type: integer
+            default: 50
+            maximum: 500
+        - name: cursor
+          in: query
+          description: Cursor for pagination
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResource'
+                  - type: object
+                    properties:
+                      _embedded:
+                        type: object
+                        properties:
+                          agents:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Agent'
+            application/ld+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Agent'
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /verbs:
+    get:
+      tags:
+        - verbs
+      summary: Get verbs
+      description: Returns xAPI verbs
+      operationId: getVerbs
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of verbs to return
+          schema:
+            type: integer
+            default: 50
+            maximum: 500
+        - name: cursor
+          in: query
+          description: Cursor for pagination
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResource'
+                  - type: object
+                    properties:
+                      _embedded:
+                        type: object
+                        properties:
+                          verbs:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Verb'
+            application/ld+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Verb'
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /verbs/{verbId}:
+    get:
+      tags:
+        - verbs
+      summary: Get verb by ID
+      description: Returns a single xAPI verb by ID
+      operationId: getVerbById
+      parameters:
+        - name: verbId
+          in: path
+          description: ID of verb to return (URI)
+          required: true
+          schema:
+            type: string
+            format: uri
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Verb'
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Verb'
+                  - $ref: '#/components/schemas/HypermediaLinks'
+            application/ld+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Verb'
+                  - type: object
+                    properties:
+                      '@context':
+                        type: string
+                        format: uri
+        '404':
+          description: Verb not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+components:
+  schemas:
+    ApiRoot:
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/Link'
+            statements:
+              $ref: '#/components/schemas/Link'
+            activities:
+              $ref: '#/components/schemas/Link'
+            agents:
+              $ref: '#/components/schemas/Link'
+            verbs:
+              $ref: '#/components/schemas/Link'
+            profile:
+              allOf:
+                - $ref: '#/components/schemas/Link'
+                - properties:
+                    name:
+                      type: string
+                      default: xAPI API Profile
+        version:
+          type: string
+          example: '1.0.0'
+        documentation:
+          type: string
+          format: uri
+          example: 'https://api.example.org/xapi/docs'
+
+    Statement:
+      type: object
+      required:
+        - actor
+        - verb
+        - object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Statement UUID
+        actor:
+          $ref: '#/components/schemas/Actor'
+        verb:
+          $ref: '#/components/schemas/Verb'
+        object:
+          $ref: '#/components/schemas/StatementObject'
+        result:
+          $ref: '#/components/schemas/Result'
+        context:
+          $ref: '#/components/schemas/Context'
+        timestamp:
+          type: string
+          format: date-time
+        stored:
+          type: string
+          format: date-time
+        authority:
+          $ref: '#/components/schemas/Agent'
+        version:
+          type: string
+          example: '1.0.0'
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attachment'
+
+    Actor:
+      oneOf:
+        - $ref: '#/components/schemas/Agent'
+        - $ref: '#/components/schemas/Group'
+      discriminator:
+        propertyName: objectType
+        mapping:
+          Agent: '#/components/schemas/Agent'
+          Group: '#/components/schemas/Group'
+
+    Agent:
+      type: object
+      properties:
+        objectType:
+          type: string
+          enum: [Agent]
+        name:
+          type: string
+        mbox:
+          type: string
+          format: uri
+          example: 'mailto:user@example.org'
+        mbox_sha1sum:
+          type: string
+        openid:
+          type: string
+          format: uri
+        account:
+          $ref: '#/components/schemas/Account'
+
+    Group:
+      type: object
+      properties:
+        objectType:
+          type: string
+          enum: [Group]
+        name:
+          type: string
+        mbox:
+          type: string
+          format: uri
+          example: 'mailto:group@example.org'
+        mbox_sha1sum:
+          type: string
+        openid:
+          type: string
+          format: uri
+        account:
+          $ref: '#/components/schemas/Account'
+        member:
+          type: array
+          items:
+            $ref: '#/components/schemas/Agent'
+
+    Account:
+      type: object
+      required:
+        - homePage
+        - name
+      properties:
+        homePage:
+          type: string
+          format: uri
+        name:
+          type: string
+
+    Verb:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          format: uri
+          example: 'http://adlnet.gov/expapi/verbs/completed'
+        display:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            en-US: completed
+            es: completado
+
+    Activity:
+      type: object
+      required:
+        - id
+      properties:
+        objectType:
+          type: string
+          enum: [Activity]
+          default: Activity
+        id:
+          type: string
+          format: uri
+        definition:
+          $ref: '#/components/schemas/ActivityDefinition'
+
+    ActivityDefinition:
+      type: object
+      properties:
+        name:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            en-US: Example Activity
+        description:
+          type: object
+          additionalProperties:
+            type: string
+        type:
+          type: string
+          format: uri
+        moreInfo:
+          type: string
+          format: uri
+        extensions:
+          type: object
+          additionalProperties: true
+
+    StatementObject:
+      oneOf:
+        - $ref: '#/components/schemas/Activity'
+        - $ref: '#/components/schemas/Agent'
+        - $ref: '#/components/schemas/Group'
+        - $ref: '#/components/schemas/StatementRef'
+      discriminator:
+        propertyName: objectType
+        mapping:
+          Activity: '#/components/schemas/Activity'
+          Agent: '#/components/schemas/Agent'
+          Group: '#/components/schemas/Group'
+          StatementRef: '#/components/schemas/StatementRef'
+
+    StatementRef:
+      type: object
+      required:
+        - objectType
+        - id
+      properties:
+        objectType:
+          type: string
+          enum: [StatementRef]
+        id:
+          type: string
+          format: uuid
+
+    Result:
+      type: object
+      properties:
+        score:
+          $ref: '#/components/schemas/Score'
+        success:
+          type: boolean
+        completion:
+          type: boolean
+        response:
+          type: string
+        duration:
+          type: string
+          pattern: '^P(?!$)(\d+Y)?(\d+M)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?$'
+        extensions:
+          type: object
+          additionalProperties: true
+
+    Score:
+      type: object
+      properties:
+        scaled:
+          type: number
+          minimum: -1
+          maximum: 1
+        raw:
+          type: number
+        min:
+          type: number
+        max:
+          type: number
+
+    Context:
+      type: object
+      properties:
+        registration:
+          type: string
+          format: uuid
+        instructor:
+          $ref: '#/components/schemas/Agent'
+        team:
+          $ref: '#/components/schemas/Group'
+        contextActivities:
+          $ref: '#/components/schemas/ContextActivities'
+        revision:
+          type: string
+        platform:
+          type: string
+        language:
+          type: string
+          pattern: '^[a-z]{2,3}(-[A-Z]{2,3})?$'
+        statement:
+          $ref: '#/components/schemas/StatementRef'
+        extensions:
+          type: object
+          additionalProperties: true
+
+    ContextActivities:
+      type: object
+      properties:
+        parent:
+          oneOf:
+            - $ref: '#/components/schemas/Activity'
+            - type: array
+              items:
+                $ref: '#/components/schemas/Activity'
+        grouping:
+          oneOf:
+            - $ref: '#/components/schemas/Activity'
+            - type: array
+              items:
+                $ref: '#/components/schemas/Activity'
+        category:
+          oneOf:
+            - $ref: '#/components/schemas/Activity'
+            - type: array
+              items:
+                $ref: '#/components/schemas/Activity'
+        other:
+          oneOf:
+            - $ref: '#/components/schemas/Activity'
+            - type: array
+              items:
+                $ref: '#/components/schemas/Activity'
+
+    Attachment:
+      type: object
+      required:
+        - usageType
+        - display
+        - contentType
+        - length
+        - sha2
+      properties:
+        usageType:
+          type: string
+          format: uri
+        display:
+          type: object
+          additionalProperties:
+            type: string
+        description:
+          type: object
+          additionalProperties:
+            type: string
+        contentType:
+          type: string
+        length:
+          type: integer
+          minimum: 0
+        sha2:
+          type: string
+        fileUrl:
+          type: string
+          format: uri
+
+    Link:
+      type: object
+      required:
+        - href
+      properties:
+        href:
+          type: string
+          format: uri
+        templated:
+          type: boolean
+          default: false
+        title:
+          type: string
+        type:
+          type: string
+
+    HypermediaLinks:
+      type: object
+      properties:
+        _links:
+          type: object
+          additionalProperties:
+            oneOf:
+              - $ref: '#/components/schemas/Link'
+              - type: array
+                items:
+                  $ref: '#/components/schemas/Link'
+
+    PaginatedResource:
+      allOf:
+        - $ref: '#/components/schemas/HypermediaLinks'
+        - type: object
+          properties:
+            _links:
+              type: object
+              properties:
+                self:
+                  $ref: '#/components/schemas/Link'
+                first:
+                  $ref: '#/components/schemas/Link'
+                prev:
+                  $ref: '#/components/schemas/Link'
+                next:
+                  $ref: '#/components/schemas/Link'
+                last:
+                  $ref: '#/components/schemas/Link'
+            page:
+              type: object
+              properties:
+                size:
+                  type: integer
+                totalElements:
+                  type: integer
+                totalPages:
+                  type: integer
+                number:
+                  type: integer
+
+    Problem:
+      type: object
+      required:
+        - type
+        - title
+      properties:
+        type:
+          type: string
+          format: uri
+          default: 'about:blank'
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
