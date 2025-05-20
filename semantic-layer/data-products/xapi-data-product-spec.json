@@ -1,0 +1,273 @@
+{
+  "@context": {
+    "dprod": "http://dataprod.org/vocabulary#",
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "dct": "http://purl.org/dc/terms/",
+    "schema": "http://schema.org/",
+    "xapi": "http://adlnet.gov/expapi/ontology/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "sh": "http://www.w3.org/ns/shacl#"
+  },
+  "@id": "http://example.org/xapi/dataproduct",
+  "@type": "dprod:DataProduct",
+  "dct:title": "xAPI Learning Experience Data Product",
+  "dct:description": "A comprehensive data product providing learning experience data through the xAPI ontology with semantic capabilities",
+  "dct:created": "2025-05-19T00:00:00Z",
+  "dct:modified": "2025-05-19T00:00:00Z",
+  "dct:publisher": {
+    "@type": "foaf:Organization",
+    "foaf:name": "xAPI Ontology Working Group"
+  },
+  "schema:version": "1.0.0",
+  
+  "dprod:domain": "Learning Experience Analytics",
+  "dprod:category": ["Learning Analytics", "Educational Technology", "Training Management"],
+  
+  "dprod:components": [
+    {
+      "@type": "dprod:DataProductComponent",
+      "dct:title": "xAPI Statements Component",
+      "dct:description": "Core learning experience statements data component",
+      "dprod:componentType": "data",
+      "dprod:dataset": {
+        "@id": "http://example.org/xapi/dataset/statements",
+        "@type": "dcat:Dataset"
+      },
+      "dprod:interfaces": [
+        {
+          "@type": "dprod:Interface",
+          "dprod:name": "REST API",
+          "dprod:protocol": "HTTP",
+          "dprod:url": "https://api.example.org/xapi/v1/statements",
+          "dprod:documentation": "https://api.example.org/xapi/docs/statements"
+        },
+        {
+          "@type": "dprod:Interface",
+          "dprod:name": "SPARQL Endpoint",
+          "dprod:protocol": "SPARQL",
+          "dprod:url": "https://api.example.org/xapi/sparql",
+          "dprod:documentation": "https://api.example.org/xapi/docs/sparql"
+        }
+      ]
+    },
+    {
+      "@type": "dprod:DataProductComponent",
+      "dct:title": "xAPI Activities Component",
+      "dct:description": "Learning activities definitions component",
+      "dprod:componentType": "data",
+      "dprod:dataset": {
+        "@id": "http://example.org/xapi/dataset/activities",
+        "@type": "dcat:Dataset"
+      },
+      "dprod:interfaces": [
+        {
+          "@type": "dprod:Interface",
+          "dprod:name": "REST API",
+          "dprod:protocol": "HTTP",
+          "dprod:url": "https://api.example.org/xapi/v1/activities",
+          "dprod:documentation": "https://api.example.org/xapi/docs/activities"
+        }
+      ]
+    },
+    {
+      "@type": "dprod:DataProductComponent",
+      "dct:title": "Learning Analytics Dashboard",
+      "dct:description": "Visual analytics component for learning experience data",
+      "dprod:componentType": "application",
+      "dprod:interfaces": [
+        {
+          "@type": "dprod:Interface",
+          "dprod:name": "Web UI",
+          "dprod:protocol": "HTTP",
+          "dprod:url": "https://dashboard.example.org/xapi",
+          "dprod:documentation": "https://dashboard.example.org/xapi/docs"
+        }
+      ]
+    }
+  ],
+  
+  "dprod:inputPorts": [
+    {
+      "@type": "dprod:InputPort",
+      "dprod:name": "xapi-statement-input",
+      "dprod:description": "Port for ingesting xAPI statements",
+      "dprod:dataContract": {
+        "@id": "http://example.org/xapi/contracts/statement-input",
+        "@type": "dprod:DataContract"
+      },
+      "dprod:protocol": "HTTP/REST",
+      "dprod:endpoint": "https://api.example.org/xapi/v1/statements"
+    },
+    {
+      "@type": "dprod:InputPort",
+      "dprod:name": "xapi-activity-input",
+      "dprod:description": "Port for ingesting xAPI activity definitions",
+      "dprod:dataContract": {
+        "@id": "http://example.org/xapi/contracts/activity-input",
+        "@type": "dprod:DataContract"
+      },
+      "dprod:protocol": "HTTP/REST",
+      "dprod:endpoint": "https://api.example.org/xapi/v1/activities"
+    }
+  ],
+  
+  "dprod:outputPorts": [
+    {
+      "@type": "dprod:OutputPort",
+      "dprod:name": "statement-query-api",
+      "dprod:description": "RESTful API for querying statements",
+      "dprod:dataContract": {
+        "@id": "http://example.org/xapi/contracts/statement-output",
+        "@type": "dprod:DataContract"
+      },
+      "dprod:protocol": "HTTP/REST",
+      "dprod:endpoint": "https://api.example.org/xapi/v1/statements"
+    },
+    {
+      "@type": "dprod:OutputPort",
+      "dprod:name": "statement-query-sparql",
+      "dprod:description": "SPARQL endpoint for semantic queries over statements",
+      "dprod:dataContract": {
+        "@id": "http://example.org/xapi/contracts/statement-sparql",
+        "@type": "dprod:DataContract"
+      },
+      "dprod:protocol": "SPARQL",
+      "dprod:endpoint": "https://api.example.org/xapi/sparql"
+    },
+    {
+      "@type": "dprod:OutputPort",
+      "dprod:name": "statement-events",
+      "dprod:description": "Event stream for statement changes",
+      "dprod:dataContract": {
+        "@id": "http://example.org/xapi/contracts/statement-events",
+        "@type": "dprod:DataContract"
+      },
+      "dprod:protocol": "WebSocket",
+      "dprod:endpoint": "wss://api.example.org/xapi/events/statements"
+    }
+  ],
+  
+  "dprod:dataModel": {
+    "@type": "dprod:DataModel",
+    "dprod:name": "xAPI Data Model",
+    "dprod:description": "Data model based on the xAPI specification and ontology",
+    "dprod:ontology": {
+      "@id": "http://adlnet.gov/expapi/ontology/",
+      "@type": "owl:Ontology"
+    },
+    "dprod:validationSchemas": [
+      {
+        "@id": "http://adlnet.gov/expapi/ontology/shapes",
+        "@type": "sh:NodeShape"
+      }
+    ]
+  },
+  
+  "dprod:observability": {
+    "@type": "dprod:ObservabilitySpec",
+    "dprod:metrics": [
+      {
+        "@type": "dprod:Metric",
+        "dprod:name": "statement_count",
+        "dprod:description": "Total number of xAPI statements",
+        "dprod:unit": "count",
+        "dprod:dataType": "integer"
+      },
+      {
+        "@type": "dprod:Metric",
+        "dprod:name": "statement_latency",
+        "dprod:description": "Time taken to process statements",
+        "dprod:unit": "ms",
+        "dprod:dataType": "decimal"
+      }
+    ],
+    "dprod:logs": {
+      "@type": "dprod:LogSpec",
+      "dprod:logFormats": ["JSON", "Plain Text"],
+      "dprod:logLevels": ["INFO", "WARNING", "ERROR", "DEBUG"],
+      "dprod:exportEndpoint": "https://logs.example.org/xapi"
+    },
+    "dprod:traces": {
+      "@type": "dprod:TraceSpec",
+      "dprod:traceFormat": "OpenTelemetry",
+      "dprod:samplingRate": 0.1,
+      "dprod:exportEndpoint": "https://traces.example.org/xapi"
+    }
+  },
+  
+  "dprod:policies": {
+    "@type": "dprod:PolicySet",
+    "dprod:dataSovereignty": {
+      "@type": "dprod:DataSovereigntyPolicy",
+      "dprod:regions": ["US", "EU"],
+      "dprod:dataResidency": "multi-region"
+    },
+    "dprod:dataRetention": {
+      "@type": "dprod:DataRetentionPolicy",
+      "dprod:retention": "P2Y",
+      "dprod:retentionJustification": "Regulatory compliance and learning analytics historical analysis"
+    },
+    "dprod:accessControl": {
+      "@type": "dprod:AccessControlPolicy",
+      "dprod:accessModel": "RBAC",
+      "dprod:roles": ["Admin", "Analyst", "Instructor", "Learner"],
+      "dprod:authMethod": "OAuth2"
+    }
+  },
+  
+  "dprod:lifecycle": {
+    "@type": "dprod:LifecycleSpec",
+    "dprod:status": "active",
+    "dprod:created": "2025-05-19T00:00:00Z",
+    "dprod:versioningStrategy": "semantic",
+    "dprod:deprecationPolicy": {
+      "@type": "dprod:DeprecationPolicy",
+      "dprod:notificationPeriod": "P3M",
+      "dprod:endOfLifeSupport": "P6M"
+    }
+  },
+  
+  "dprod:quality": {
+    "@type": "dprod:QualitySpec",
+    "dprod:availabilityTarget": "99.9%",
+    "dprod:performanceSLAs": [
+      {
+        "@type": "dprod:PerformanceSLA",
+        "dprod:operation": "Query Statements",
+        "dprod:responseTime": "P95<500ms",
+        "dprod:throughput": "100rps"
+      },
+      {
+        "@type": "dprod:PerformanceSLA",
+        "dprod:operation": "Store Statements",
+        "dprod:responseTime": "P99<1000ms",
+        "dprod:throughput": "50rps"
+      }
+    ],
+    "dprod:dataQualityRules": [
+      {
+        "@type": "dprod:DataQualityRule",
+        "dprod:name": "StatementCompleteness",
+        "dprod:description": "All required fields in statements must be present",
+        "dprod:enforcement": "strict"
+      },
+      {
+        "@type": "dprod:DataQualityRule",
+        "dprod:name": "AgentIdentifier",
+        "dprod:description": "All agents must have at least one identifier",
+        "dprod:enforcement": "strict"
+      }
+    ]
+  },
+  
+  "prov:wasGeneratedBy": {
+    "@type": "prov:Activity",
+    "prov:startedAtTime": "2025-05-19T00:00:00Z",
+    "prov:endedAtTime": "2025-05-19T12:00:00Z",
+    "prov:wasAssociatedWith": {
+      "@type": "prov:Agent",
+      "foaf:name": "xAPI Ontology Working Group"
+    }
+  }
+}
