@@ -76,6 +76,8 @@ python3 rest_api/ref_impl/server.py
 
 The server listens on port `8000` by default and stores all data in memory. It implements a minimal subset of the API defined in `rest-api/openapi.yaml` and is useful for quick experimentation.
 
+Its existing JSON writes/reads remain available, including loose historical examples. Explicit read-only current-record and provenance exports are described in [the Python reference contract](rest_api/ref_impl/README.md). An incomplete stored row is still readable but cannot acquire current record typing through export. This is a bounded structural projection, not xAPI/SHACL certification or a deployed LRS.
+
 ### Node reference pipeline and current record adapter
 
 The Node implementation preserves original JSON, commits its local-context RDF
