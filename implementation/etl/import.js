@@ -1,14 +1,12 @@
 const fs = require('fs');
 const path = require('path');
-const N3 = require('n3');
-const jsonld = require('jsonld');
 const tripleStore = require('../triple-store/store');
 
 // ETL Pipeline for xAPI data
 class XapiEtlPipeline {
-  constructor() {
-    this.sampleDataDir = path.join(__dirname, 'sample-data');
-    this.jsonldContext = path.join(__dirname, '..', '..', 'rest-api', 'jsonld-context', 'statement-context.jsonld');
+  constructor({ store = tripleStore, sampleDataDir = path.join(__dirname, 'sample-data') } = {}) {
+    this.tripleStore = store;
+    this.sampleDataDir = sampleDataDir;
   }
 
   // Initialize the pipeline and process sample data
@@ -217,9 +215,11 @@ class XapiEtlPipeline {
         const statement = JSON.parse(fs.readFileSync(file, 'utf8'));
         
         // Transform and load the statement
-        await this.processStatement(statement);
+        const result = await this.processStatement(statement);
+        if (!result.success) throw new Error(result.error || 'Statement import failed');
       } catch (error) {
         console.error(`Error processing ${file}:`, error);
+        throw error;
       }
     }
   }
@@ -227,34 +227,8 @@ class XapiEtlPipeline {
   // Process a single statement - transform and load it to the triple store
   async processStatement(statement) {
     try {
-      // Load the JSON-LD context
-      let context = {};
-      try {
-        if (fs.existsSync(this.jsonldContext)) {
-          context = JSON.parse(fs.readFileSync(this.jsonldContext, 'utf8'));
-        } else {
-          console.warn('JSON-LD context file not found:', this.jsonldContext);
-          context = {
-            "@context": {
-              "xapi": "http://adlnet.gov/expapi/ontology/"
-            }
-          };
-        }
-      } catch (error) {
-        console.error('Error loading JSON-LD context:', error);
-      }
-      
-      // Add the context to the statement to create JSON-LD
-      const jsonldData = {
-        "@context": context["@context"],
-        ...statement
-      };
-      
-      // Convert to expanded JSON-LD (explicit URIs)
-      const expandedData = await jsonld.expand(jsonldData);
-      
-      // Load into the triple store
-      const result = await tripleStore.addStatement(statement);
+      // The same store performs the pinned expansion, commits it, and retains original JSON.
+      const result = await this.tripleStore.addStatement(statement);
       
       if (result.success) {
         console.log(`Successfully imported statement: ${statement.id}`);
@@ -271,14 +245,14 @@ class XapiEtlPipeline {
 }
 
 // Main function to run the ETL pipeline
-async function runPipeline() {
+async function runPipeline(options = {}) {
   console.log('Starting xAPI ETL pipeline...');
   
-  const pipeline = new XapiEtlPipeline();
+  const pipeline = new XapiEtlPipeline(options);
   
   try {
     // Initialize the triple store
-    await tripleStore.initialize();
+    await pipeline.tripleStore.initialize();
     
     // Run the ETL pipeline
     await pipeline.initialize();
@@ -286,6 +260,7 @@ async function runPipeline() {
     console.log('ETL pipeline completed successfully');
   } catch (error) {
     console.error('ETL pipeline error:', error);
+    throw error;
   }
 }
 

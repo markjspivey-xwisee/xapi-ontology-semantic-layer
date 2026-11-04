@@ -76,6 +76,16 @@ python3 rest_api/ref_impl/server.py
 
 The server listens on port `8000` by default and stores all data in memory. It implements a minimal subset of the API defined in `rest-api/openapi.yaml` and is useful for quick experimentation.
 
+### Node reference pipeline and current record adapter
+
+The Node implementation preserves original JSON, commits its local-context RDF
+expansion, and lets the HTTP API query that same in-memory store. A separate,
+source-qualified current Foxxi informational record is available without changing
+the legacy ontology or original payload. See [the data-path contract, endpoints,
+version pins and limitations](implementation/ALIGNMENT.md). Run the actual HTTP/RDF
+regressions with npm ci --ignore-scripts and npm test from implementation/.
+This reference pipeline is not a deployed or durable LRS.
+
 ### Sample data and validation
 
 Example xAPI statements are provided under `examples/sample-statements.jsonld`. A helper script in `scripts/validate_samples.py` can validate these statements against the SHACL shapes, provided `pyshacl` and `rdflib` are available in your environment.

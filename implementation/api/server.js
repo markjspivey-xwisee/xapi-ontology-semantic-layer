@@ -7,13 +7,15 @@ const fs = require('fs');
 const yaml = require('js-yaml');
 const swaggerUi = require('swagger-ui-express');
 const uuid = require('uuid');
+const { Parser } = require('sparqljs');
+const { UUID, loadPinnedContext } = require('../statement-projection');
 
 // Import our triple store
-const tripleStore = require('../triple-store/store');
+const defaultStore = require('../triple-store/store');
 
 // Create Express app
+function createApp({ store: tripleStore = defaultStore } = {}) {
 const app = express();
-const port = 3000;
 
 // Replace Express's default json response with HATEOAS enabled version
 app.use(hateoasLinker);
@@ -54,6 +56,8 @@ app.get('/', (req, res) => {
       activities: { href: '/activities' },
       agents: { href: '/agents' },
       verbs: { href: '/verbs' },
+      query: { href: '/sparql' },
+      context: { href: '/contexts/statement-context' },
       documentation: { href: '/api-docs' }
     },
     version: '1.0.0'
@@ -72,6 +76,9 @@ app.get('/statements', async (req, res) => {
       until: req.query.until,
       limit: parseInt(req.query.limit) || 50
     };
+    if (['since', 'until'].some(key => filters[key] && !Number.isFinite(Date.parse(filters[key])))) {
+      return res.status(400).json({ error: 'invalid_timestamp_filter' });
+    }
     
     const result = await tripleStore.getStatements(filters);
     
@@ -79,11 +86,12 @@ app.get('/statements', async (req, res) => {
       const statements = result.statements.map(stmt => {
         // Add hypermedia links to each statement
         const statement = stmt.statement ? stmt.statement.value : null;
+        const statementId = statement && statement.startsWith('urn:uuid:') ? statement.slice(9) : statement;
         
         return {
           ...stmt,
           _links: {
-            self: { href: `/statements/${statement}` },
+            self: { href: '/statements/' + statementId },
             actor: { href: `/agents/${stmt.actor?.value}` },
             verb: { href: `/verbs/${encodeURIComponent(stmt.verb?.value)}` },
             object: { href: `/activities/${encodeURIComponent(stmt.object?.value)}` }
@@ -115,87 +123,64 @@ app.get('/statements', async (req, res) => {
   }
 });
 
-// Get a specific statement by ID
-app.get('/statements/:id', async (req, res) => {
-  try {
-    const statementId = req.params.id;
-    
-    // Build a SPARQL query to get a specific statement
-    const sparqlQuery = `
-      PREFIX xapi: <http://adlnet.gov/expapi/ontology/>
-      SELECT *
-      WHERE {
-        <${statementId}> ?p ?o .
-      }
-    `;
-    
-    const result = await tripleStore.executeQuery(sparqlQuery);
-    
-    if (result && result.length > 0) {
-      // Transform the flat result into a nested structure
-      const statement = {};
-      
-      result.forEach(triple => {
-        const predicate = triple.p.value.split('/').pop();
-        statement[predicate] = triple.o.value;
-      });
-      
-      // Add hypermedia links
-      res.json({
-        ...statement,
-        _links: {
-          self: { href: `/statements/${statementId}` },
-          collection: { href: '/statements' }
-        }
-      });
-    } else {
-      res.status(404).json({ 
-        error: 'Statement not found',
-        id: statementId 
-      });
-    }
-  } catch (error) {
-    res.status(500).json({ 
-      error: 'Server error',
-      message: error.message 
-    });
-  }
+// Original JSON is retained independently of RDF expansion and never flattened.
+app.get('/statements/:id', (req, res) => {
+  if (!UUID.test(req.params.id)) return res.status(400).json({ error: 'invalid_statement_id' });
+  const original = tripleStore.getOriginal(req.params.id);
+  if (!original) return res.status(404).json({ error: 'Statement not found' });
+  res.json(original);
 });
 
-// Create a new statement
-app.post('/statements', async (req, res) => {
-  try {
-    const statement = req.body;
-    
-    // Generate an ID if not provided
-    if (!statement.id) {
-      statement.id = uuid.v4();
-    }
-    
-    const result = await tripleStore.addStatement(statement);
-    
-    if (result.success) {
-      res.status(201)
-         .header('Location', `/statements/${statement.id}`)
-         .json({
-           id: statement.id,
-           _links: {
-             self: { href: `/statements/${statement.id}` },
-             collection: { href: '/statements' }
-           }
-         });
-    } else {
-      res.status(400).json({ 
-        error: 'Error storing statement',
-        message: result.error 
-      });
-    }
-  } catch (error) {
-    res.status(500).json({ 
-      error: 'Server error',
-      message: error.message 
+app.get('/statements/:id/:representation', async (req, res) => {
+  if (!UUID.test(req.params.id)) return res.status(400).json({ error: 'invalid_statement_id' });
+  if (req.params.representation === 'provenance') {
+    const projection = tripleStore.getProjection(req.params.id);
+    if (!projection) return res.status(404).json({ error: 'Statement not found' });
+    return res.json({
+      id: projection.original.id, legacyIri: projection.legacyIri, recordIri: projection.recordIri,
+      sourceDocumentIri: projection.sourceDocumentIri, sourceJsonCanonicalSha256: projection.sourceSha256,
+      contextCanonicalSha256: projection.contextSha256, sourceModel: projection.sourceModel,
+      targetOntologyVersion: 'https://foxxi-bridge.interego.xwisee.com/ns/xapi/2026.10.1',
+      sourceProtocolVersion: projection.original.version || null, adapter: projection.adapter, storage: 'in-memory'
     });
   }
+  if (!['legacy', 'record'].includes(req.params.representation)) return res.status(404).json({ error: 'Unknown representation' });
+  const format = req.accepts(['application/ld+json', 'text/turtle']);
+  if (!format) return res.status(406).json({ error: 'Use application/ld+json or text/turtle' });
+  try {
+    const data = await tripleStore.exportStatement(req.params.id, req.params.representation, format === 'text/turtle' ? 'turtle' : 'jsonld');
+    if (data === undefined) return res.status(404).json({ error: 'Statement not found' });
+    res.type(format).send(data);
+  } catch (error) { res.status(500).json({ error: 'RDF export failed', message: error.message }); }
+});
+
+// The source-qualified adapter, not arbitrary client RDF, licenses the record type.
+app.post('/statements', async (req, res) => {
+  if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) return res.status(400).json({ error: 'invalid_statement' });
+  const statement = { ...req.body };
+  if (statement.id === undefined) statement.id = uuid.v4();
+  const result = await tripleStore.addStatement(statement);
+  if (!result.success) {
+    const status = result.code === 'statement_conflict' ? 409 : result.code === 'invalid_statement' ? 400 : 500;
+    return res.status(status).json({ error: result.code, message: result.error });
+  }
+  res.status(result.duplicate ? 200 : 201).header('Location', '/statements/' + result.id).json({
+    id: result.id, duplicate: result.duplicate, recordIri: result.recordIri,
+    _links: { self: { href: '/statements/' + result.id }, collection: { href: '/statements' },
+      legacy: { href: '/statements/' + result.id + '/legacy' }, record: { href: '/statements/' + result.id + '/record' } }
+  });
+});
+
+// A local read-only query surface: no updates or federated SERVICE/network access.
+app.get('/sparql', async (req, res) => {
+  try {
+    if (typeof req.query.query !== 'string' || req.query.query.length > 16384) throw new Error('A bounded query is required');
+    const parsed = new Parser().parse(req.query.query);
+    const hasService = value => value && typeof value === 'object' &&
+      (value.type === 'service' || Object.values(value).some(item => Array.isArray(item) ? item.some(hasService) : hasService(item)));
+    if (parsed.type !== 'query' || !['SELECT', 'ASK'].includes(parsed.queryType) || hasService(parsed)) throw new Error('Only local SELECT and ASK are supported');
+    res.json({ results: await tripleStore.executeQuery(req.query.query) });
+  } catch (error) { res.status(400).json({ error: 'invalid_query', message: error.message }); }
 });
 
 // Get all verbs
@@ -321,18 +306,10 @@ app.get('/agents', async (req, res) => {
 // JSON-LD Context endpoint
 app.get('/contexts/:name', (req, res) => {
   const contextName = req.params.name;
-  const contextPath = path.join(__dirname, '..', '..', 'rest-api', 'jsonld-context', `${contextName}.jsonld`);
+  if (!['statement', 'statement-context'].includes(contextName)) return res.status(404).json({ error: 'Context not found' });
   
   try {
-    if (fs.existsSync(contextPath)) {
-      const contextData = fs.readFileSync(contextPath, 'utf8');
-      res.type('application/ld+json').send(contextData);
-    } else {
-      res.status(404).json({
-        error: 'Context not found',
-        context: contextName
-      });
-    }
+    res.type('application/ld+json').send({ '@context': loadPinnedContext() });
   } catch (error) {
     res.status(500).json({ 
       error: 'Server error', 
@@ -341,20 +318,16 @@ app.get('/contexts/:name', (req, res) => {
   }
 });
 
-// Start the server
-async function startServer() {
-  try {
-    // Make sure the triple store is initialized
-    await tripleStore.initialize();
-    
-    app.listen(port, () => {
-      console.log(`xAPI Ontology API server running at http://localhost:${port}`);
-      console.log(`API documentation available at http://localhost:${port}/api-docs`);
-    });
-  } catch (error) {
-    console.error('Failed to start server:', error);
-  }
+return app;
 }
 
-// Start the server
-startServer();
+async function startServer({ store = defaultStore, port = 3000, host = '127.0.0.1' } = {}) {
+  await store.initialize();
+  const app = createApp({ store });
+  return new Promise((resolve, reject) => {
+    const server = app.listen(port, host, () => resolve(server));
+    server.once('error', reject);
+  });
+}
+if (require.main === module) startServer().catch(error => { console.error(error); process.exitCode = 1; });
+module.exports = { createApp, startServer };
