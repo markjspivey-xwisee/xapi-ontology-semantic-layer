@@ -1,67 +1,24 @@
-const path = require('path');
-const { spawn } = require('child_process');
+const path = require('node:path');
+const { spawn } = require('node:child_process');
 const tripleStore = require('./triple-store/store');
-const etl = require('./etl/import');
+const { runPipeline } = require('./etl/import');
+const { startServer } = require('./api/server');
 
-// Main application that coordinates all components
-async function startApplication() {
-  console.log('🚀 Starting xAPI Ontology and Semantic Layer Implementation');
-  
-  try {
-    // 1. Initialize the triple store
-    console.log('\n📦 Initializing Triple Store...');
-    await tripleStore.initialize();
-    console.log('✅ Triple Store initialized successfully');
-    
-    // 2. Run the ETL pipeline to load data
-    console.log('\n🔄 Running ETL Pipeline...');
-    await etl.runPipeline();
-    console.log('✅ ETL Pipeline completed successfully');
-    
-    // 3. Start the API server in a child process
-    console.log('\n🌐 Starting API Server...');
-    const apiServer = spawn('node', [path.join(__dirname, 'api', 'server.js')], {
-      stdio: 'inherit'
-    });
-    
-    apiServer.on('error', (error) => {
-      console.error('❌ API Server error:', error);
-    });
-    
-    // 4. Start the UI server in a child process
-    console.log('\n🖥️ Starting UI Server...');
-    const uiServer = spawn('node', [path.join(__dirname, 'ui', 'server.js')], {
-      stdio: 'inherit'
-    });
-    
-    uiServer.on('error', (error) => {
-      console.error('❌ UI Server error:', error);
-    });
-    
-    console.log('\n🎉 All components started successfully!');
-    console.log('📝 Visit http://localhost:3001 to access the UI');
-    console.log('🔍 API documentation available at http://localhost:3000/api-docs');
-    
-    // Handle graceful shutdown
-    process.on('SIGINT', async () => {
-      console.log('\n🛑 Shutting down...');
-      
-      // Kill child processes
-      apiServer.kill();
-      uiServer.kill();
-      
-      // Exit the process
-      process.exit(0);
-    });
-  } catch (error) {
-    console.error('❌ Error starting application:', error);
-    process.exit(1);
-  }
+// ETL and HTTP intentionally share this exact in-process store.
+async function startApplication({ store = tripleStore, sampleDataDir, apiPort = 3000, ui = true } = {}) {
+  await store.initialize();
+  await runPipeline({ store, sampleDataDir });
+  const apiServer = await startServer({ store, port: apiPort });
+  const uiServer = ui ? spawn(process.execPath, [path.join(__dirname, 'ui', 'server.js')], { stdio: 'inherit' }) : null;
+  return { apiServer, uiServer, close: async () => {
+    if (uiServer) uiServer.kill();
+    await new Promise((resolve, reject) => apiServer.close(error => error ? reject(error) : resolve()));
+  } };
 }
-
-// Start the application
 if (require.main === module) {
-  startApplication();
+  startApplication().then(application => {
+    console.log('Reference API ready at http://127.0.0.1:3000 (in-memory, not durable)');
+    process.once('SIGINT', () => application.close().then(() => process.exit(0)));
+  }).catch(error => { console.error(error); process.exitCode = 1; });
 }
-
 module.exports = { startApplication };

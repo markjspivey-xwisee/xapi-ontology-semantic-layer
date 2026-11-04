@@ -1,0 +1,26 @@
+name: Reference statement alignment
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  actual-http-rdf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: implementation/package-lock.json
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: implementation
+      - run: npm test
+        working-directory: implementation
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s tests -v
