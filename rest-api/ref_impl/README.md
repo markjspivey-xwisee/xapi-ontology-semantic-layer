@@ -24,3 +24,9 @@ any stored items will be lost when the process stops.
 
 This implementation only covers a tiny subset of the full specification but
 serves as a starting point for experimentation and testing.
+
+This compatibility launch now delegates to `rest_api/ref_impl/server.py`; see
+[its current-record projection contract](../../rest_api/ref_impl/README.md) for
+read-only RDF/provenance ports, retained loose JSON compatibility, immutable-ID
+retry rules, source/version boundaries and the actual HTTP regression. Both
+launch paths remain standard-library-only and in memory.
